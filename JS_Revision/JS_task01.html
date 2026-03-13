@@ -1,3 +1,5 @@
+<!-- Convert the promise based code into async/await compatible code. Here’s a refresher of the code we are starting with: -->
+
 !<!doctype html>
 <html lang="en">
   <head>
@@ -9,18 +11,18 @@
 
     <script>
       const img = document.querySelector("img");
-      fetch(
-        "https://api.giphy.com/v1/gifs/translate?api_key=YOUR_KEY_HERE&s=cats",
-      )
-        .then(function (response) {
-          return response.json();
-        })
-        .then(function (response) {
-          img.src = response.data.images.original.url;
-        })
-        .catch(function (error) {
+      async function getApi() {
+        try {
+          const api = await fetch(
+            "https://api.giphy.com/v1/gifs/translate?api_key=xbSbgpkqV7pY9mvOEXRApATdFZZq5FRS&s=cats",
+          );
+          const Data = await api.json();
+          img.src = Data.data.images.original.url;
+        } catch (error) {
           console.error(error);
-        });
+        }
+      }
+      getApi();
     </script>
   </body>
 </html>
