@@ -82,15 +82,20 @@ section {
 }
 .products .card {
   background: #f2e5b7;
-  height: 200px;
+  height: auto;
   display: grid;
   justify-content: center;
   align-items: center;
   font-weight: bold;
-  /* border-radius: 8px;
-  padding: 8px; */
+  border-radius: 8px;
+  padding: 8px;
 }
 
 .products .card img {
   justify-self: center;
+}
+
+.controller {
+  width: 20px;
+  height: 20px;
 }

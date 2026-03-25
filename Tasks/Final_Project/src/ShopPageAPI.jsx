@@ -35,6 +35,14 @@ export default function ShopPageAPI() {
       alert(`Added ${quantity} of ${item.title} to cart!`);
     }
 
+    function addOneProduct() {
+      setQuantity((q) => q + 1);
+    }
+
+    function removeOneProduct() {
+      setQuantity((q) => (q > 0 ? q - 1 : 0));
+    }
+
     return (
       <div className="ProductHandeler">
         <input
@@ -45,6 +53,13 @@ export default function ShopPageAPI() {
             setQuantity(Math.max(0, parseInt(e.target.value) || 0))
           }
         />
+        <button onClick={removeOneProduct} className="controller">
+          -
+        </button>
+        <button onClick={addOneProduct} className="controller">
+          +
+        </button>
+        <br />
         <button onClick={addToCart}>Add to cart</button>
       </div>
     );
@@ -76,6 +91,7 @@ export default function ShopPageAPI() {
                 <h3>{item.title}</h3>
                 {/* <p>{item.description}</p> */}
                 {/* <Link to={`/ProductPage/${item.id}`}>View details</Link> */}
+                <h4>{item.price} $</h4>
                 <Link to={"/ProductPage"}>View details</Link>
                 <ProductHandeler item={item} index={index} />
               </div>

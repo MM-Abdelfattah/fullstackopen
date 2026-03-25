@@ -27,13 +27,18 @@ export default function CartPage() {
   }
 
   function removeItem(itemName) {
-    const updatedCart = finalItems.filter((item) => item.Name !== itemName);
+    const updatedCart = finalItems.filter((item) => item.title !== itemName);
     setFinalItems(updatedCart);
   }
 
   let totalItems = 0;
   finalItems.forEach((e) => {
     totalItems += e.total;
+  });
+
+  let totalPrice = 0;
+  finalItems.forEach((e) => {
+    totalPrice += e.price * e.total;
   });
 
   return (
@@ -52,17 +57,24 @@ export default function CartPage() {
       <section className="products">
         {finalItems.map((item, index) => (
           <>
-            <div key={item.Name}>
-              <h2>{item.Name} : </h2>
+            <div key={item.title}>
+              <h2>{item.title}</h2>
               <p>Quantity: {item.total}</p>
-              <button onClick={() => increaseQ(index)}>+</button>
-              <button onClick={() => decreaseQ(index)}>-</button>
-              <button onClick={() => removeItem(item.Name)}>Remove Item</button>
+              <button className="controller" onClick={() => increaseQ(index)}>
+                +
+              </button>
+              <button className="controller" onClick={() => decreaseQ(index)}>
+                -
+              </button>
+              <button onClick={() => removeItem(item.title)}>
+                Remove Item
+              </button>
               <hr />
             </div>
           </>
         ))}
         <h2>Total products = {totalItems} </h2>
+        <h2>Total Price = {totalPrice} $</h2>
       </section>
     </>
   );
