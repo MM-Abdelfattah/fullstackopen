@@ -1,14 +1,24 @@
 const mongoose = require("mongoose");
 
-if (process.argv.length < 3) {
+const args = process.argv;
+
+if (args.length < 3) {
+  console.log("Usage: node mongo.js <password> [name] [number]");
+  process.exit(1);
+}
+
+const password = args[2];
+const name = args[3];
+const number = args[4];
+
+if (args.length === 4) {
   console.log(
-    "Please provide the password as an argument: node mongo.js <password>",
+    "Please provide both name and number, or just the password to list all.",
   );
   process.exit(1);
 }
 
-const password = process.argv[2];
-const url = `mongodb+srv://Mohamed:<db_password>@cluster0.bagboyl.mongodb.net/?appName=Cluster0`;
+const url = `mongodb+srv://Mohamed:${password}@cluster0.bagboyl.mongodb.net/phonebook?retryWrites=true&w=majority`;
 
 mongoose.set("strictQuery", false);
 mongoose.connect(url);
@@ -20,28 +30,21 @@ const personSchema = new mongoose.Schema({
 
 const Person = mongoose.model("Person", personSchema);
 
-if (process.argv.length === 3) {
-  Person.find({}).then((result) => {
+if (args.length === 3) {
+  Person.find({}).then((persons) => {
     console.log("phonebook:");
-    result.forEach((person) => {
-      console.log(`${person.name} ${person.number}`);
+    persons.forEach((p) => {
+      console.log(`${p.name} ${p.number}`);
     });
     mongoose.connection.close();
   });
-} else if (process.argv.length === 5) {
-  const name = process.argv[3];
-  const number = process.argv[4];
+}
 
-  const person = new Person({
-    name: name,
-    number: number,
-  });
+if (args.length === 5) {
+  const person = new Person({ name, number });
 
   person.save().then(() => {
     console.log(`added ${name} number ${number} to phonebook`);
     mongoose.connection.close();
   });
-} else {
-  console.log("Invalid number of arguments.");
-  mongoose.connection.close();
 }
