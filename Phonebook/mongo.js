@@ -8,7 +8,6 @@ if (process.argv.length < 3) {
 }
 
 const password = process.argv[2];
-
 const url = `mongodb+srv://Mohamed:<db_password>@cluster0.bagboyl.mongodb.net/?appName=Cluster0`;
 
 mongoose.set("strictQuery", false);
@@ -44,8 +43,5 @@ if (process.argv.length === 3) {
   });
 } else {
   console.log("Invalid number of arguments.");
-  console.log("Usage:");
-  console.log("  To list: node mongo.js <password>");
-  console.log("  To add:  node mongo.js <password> <name> <number>");
   mongoose.connection.close();
 }
