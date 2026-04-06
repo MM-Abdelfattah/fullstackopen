@@ -3,7 +3,20 @@ const Blog = require("../models/blog");
 const User = require("../models/user");
 
 blogsRouter.get("/", async (request, response) => {
-  const blogs = await Blog.find({}).populate("user", {
+  const search = request.query.search;
+
+  let query = {};
+
+  if (search) {
+    query = {
+      title: {
+        $regex: search,
+        $options: "i",
+      },
+    };
+  }
+
+  const blogs = await Blog.find(query).populate("user", {
     username: 1,
     name: 1,
   });
@@ -30,6 +43,24 @@ blogsRouter.post("/", async (request, response) => {
   await user.save();
 
   response.status(201).json(savedBlog);
+});
+
+blogsRouter.patch("/:id/like", async (request, response) => {
+  try {
+    const blog = await Blog.findById(request.params.id);
+
+    if (!blog) {
+      return response.status(404).json({ error: "blog not found" });
+    }
+
+    blog.likes = blog.likes + 1;
+
+    const updatedBlog = await blog.save();
+
+    response.status(200).json(updatedBlog);
+  } catch (error) {
+    response.status(400).json({ error: "malformed id" });
+  }
 });
 
 module.exports = blogsRouter;

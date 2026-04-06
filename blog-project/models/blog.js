@@ -1,7 +1,10 @@
 const mongoose = require("mongoose");
 
 const blogSchema = new mongoose.Schema({
-  title: String,
+  title: {
+    type: String,
+    index: true,
+  },
   author: String,
   url: String,
   likes: {
@@ -13,6 +16,8 @@ const blogSchema = new mongoose.Schema({
     ref: "User",
   },
 });
+
+blogSchema.index({ title: "text" });
 
 blogSchema.set("toJSON", {
   transform: (document, returnedObject) => {
