@@ -1,24 +1,30 @@
 const blogsRouter = require("express").Router();
+
 const Blog = require("../models/blog");
-const User = require("../models/user");
+
+const middleware = require("../utils/middleware");
 
 blogsRouter.get("/", async (request, response) => {
-  const { search, author, sortBy, order, page, limit } = request.query;
+  const {
+    search,
+    author,
+    sortBy,
+    order = "asc",
+    page = 1,
+    limit = 10,
+  } = request.query;
 
-  let query = {};
+  const query = {};
 
   if (search) {
-    query.title = {
-      $regex: search,
-      $options: "i",
-    };
+    query.title = { $regex: search, $options: "i" };
   }
 
   if (author) {
     query.author = author;
   }
 
-  let sortObject = {};
+  let sort = {};
 
   if (sortBy) {
     if (sortBy !== "likes") {
@@ -27,41 +33,35 @@ blogsRouter.get("/", async (request, response) => {
       });
     }
 
-    sortObject[sortBy] = order === "asc" ? 1 : -1;
+    sort[sortBy] = order === "desc" ? -1 : 1;
   }
 
-  const pageNumber = parseInt(page) || 1;
-  const pageSize = parseInt(limit) || 10;
-
-  const skip = (pageNumber - 1) * pageSize;
+  const pageNumber = Number(page);
+  const limitNumber = Number(limit);
 
   const totalBlogs = await Blog.countDocuments(query);
 
   const blogs = await Blog.find(query)
-    .populate("user", {
-      username: 1,
-      name: 1,
-    })
-    .sort(sortObject)
-    .skip(skip)
-    .limit(pageSize);
+    .populate("user", { username: 1, name: 1 })
+    .sort(sort)
+    .skip((pageNumber - 1) * limitNumber)
+    .limit(limitNumber);
 
   response.json({
     pagination: {
       currentPage: pageNumber,
-      pageSize: pageSize,
-      totalBlogs: totalBlogs,
-      totalPages: Math.ceil(totalBlogs / pageSize),
+      pageSize: limitNumber,
+      totalBlogs,
+      totalPages: Math.ceil(totalBlogs / limitNumber),
     },
-
     data: blogs,
   });
 });
 
-blogsRouter.post("/", async (request, response) => {
+blogsRouter.post("/", middleware.userExtractor, async (request, response) => {
   const body = request.body;
 
-  const user = await User.findOne({});
+  const user = request.user;
 
   const blog = new Blog({
     title: body.title,
@@ -81,7 +81,27 @@ blogsRouter.post("/", async (request, response) => {
 });
 
 blogsRouter.patch("/:id/like", async (request, response) => {
-  try {
+  const blog = await Blog.findById(request.params.id);
+
+  if (!blog) {
+    return response.status(404).json({
+      error: "blog not found",
+    });
+  }
+
+  blog.likes = blog.likes + 1;
+
+  const updatedBlog = await blog.save();
+
+  response.json(updatedBlog);
+});
+
+blogsRouter.delete(
+  "/:id",
+  middleware.userExtractor,
+  async (request, response) => {
+    const user = request.user;
+
     const blog = await Blog.findById(request.params.id);
 
     if (!blog) {
@@ -90,16 +110,16 @@ blogsRouter.patch("/:id/like", async (request, response) => {
       });
     }
 
-    blog.likes += 1;
+    if (blog.user.toString() !== user.id.toString()) {
+      return response.status(403).json({
+        error: "only creator can delete blog",
+      });
+    }
 
-    const updatedBlog = await blog.save();
+    await Blog.findByIdAndDelete(request.params.id);
 
-    response.status(200).json(updatedBlog);
-  } catch (error) {
-    response.status(400).json({
-      error: "malformed id",
-    });
-  }
-});
+    response.status(204).end();
+  },
+);
 
 module.exports = blogsRouter;

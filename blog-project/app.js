@@ -1,19 +1,19 @@
 const express = require("express");
-const mongoose = require("mongoose");
+const app = express();
 
 const blogsRouter = require("./controllers/blogs");
 const usersRouter = require("./controllers/users");
+const loginRouter = require("./controllers/login");
 
-const app = express();
-
-mongoose
-  .connect("mongodb://127.0.0.1:27017/bloglist")
-  .then(() => console.log("connected to MongoDB"))
-  .catch((error) => console.log("error connecting to MongoDB:", error.message));
+const middleware = require("./utils/middleware");
 
 app.use(express.json());
 
-app.use("/api/blogs", blogsRouter);
+app.use(middleware.tokenExtractor);
+
+app.use("/api/login", loginRouter);
 app.use("/api/users", usersRouter);
+
+app.use("/api/blogs", blogsRouter);
 
 module.exports = app;
