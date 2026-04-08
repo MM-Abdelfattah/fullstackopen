@@ -13,6 +13,7 @@ usersRouter.get("/", async (request, response) => {
 });
 
 usersRouter.post("/", async (request, response) => {
+  console.log("--- Request Received at /api/users ---");
   const { username, name, password } = request.body;
 
   if (!username || !password) {
